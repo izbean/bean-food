@@ -3,9 +3,10 @@ package com.beanfood.controller;
 import com.beanfood.domain.Post;
 import com.beanfood.repository.PostRepository;
 import com.beanfood.request.PostCreate;
+import com.beanfood.request.PostEdit;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +20,7 @@ import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -30,12 +30,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PostControllerTest {
 
     @Autowired
+    private ObjectMapper mapper;
+    @Autowired
     private MockMvc mvc;
 
     @Autowired
     private PostRepository postRepository;
 
-    @AfterEach
+    @BeforeEach
     public void clean() {
         postRepository.deleteAll();
     }
@@ -46,7 +48,7 @@ class PostControllerTest {
         // given
         PostCreate request = new PostCreate("", "내용 입니다.");
 
-        ObjectMapper mapper = new ObjectMapper();
+
 
         // expected
         mvc.perform(post("/posts")
@@ -126,9 +128,104 @@ class PostControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()", Matchers.is(10)))
-                .andExpect(jsonPath("$[0].id").value(30))
                 .andExpect(jsonPath("$[0].title").value("이즈콩 제목 30"))
                 .andExpect(jsonPath("$[0].content").value("반포 자이 30"))
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("글 제목 수정")
+    void test5() throws Exception {
+        // given
+        Post post = Post.builder()
+                .title("이즈콩 제목")
+                .content("반포 자이")
+                .build();
+
+        postRepository.save(post);
+
+        PostEdit postEdit = PostEdit.builder()
+                .title("이즈콩")
+                .content("반포 자이")
+                .build();
+
+        // expected
+        mvc.perform(patch("/posts/{postId}", post.getId())
+                        .contentType(APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(post))
+                )
+                .andExpect(status().isOk())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("글 삭제")
+    void test6() throws Exception {
+        // given
+        Post post = Post.builder()
+                .title("이즈콩 제목")
+                .content("반포 자이")
+                .build();
+
+        postRepository.save(post);
+
+        // expected
+        mvc.perform(delete("/posts/{postId}", post.getId())
+                        .contentType(APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 게시글 조회")
+    void test7() throws Exception {
+        // given
+        Post post = Post.builder()
+                .title("이즈콩 제목")
+                .content("반포 자이")
+                .build();
+
+        postRepository.save(post);
+
+        // expected
+        mvc.perform(delete("/posts/{postId}", 999L)
+                        .contentType(APPLICATION_JSON)
+                )
+                .andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 게시글 수정")
+    void test8() throws Exception {
+        // given
+        PostEdit postEdit = PostEdit.builder()
+                .title("이즈콩")
+                .content("반포 자이")
+                .build();
+
+        // expected
+        mvc.perform(patch("/posts/{postId}", 999L)
+                        .contentType(APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(postEdit))
+                )
+                .andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("게시글 작성시 제목에 '바보'는 포함 될 수 없다.")
+    void test9() throws Exception {
+        // given
+        PostCreate request = new PostCreate("바보", "내용 입니다.");
+
+        // expected
+        mvc.perform(post("/posts")
+                        .contentType(APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(request))
+                )
+                .andExpect(status().isBadRequest())
                 .andDo(print());
     }
 

@@ -1,5 +1,6 @@
 package com.beanfood.request;
 
+import com.beanfood.exception.InvalidRequest;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,6 +30,12 @@ public class PostCreate {
                 .title(title)
                 .content(content)
                 .build();
+    }
+
+    public void validate() {
+        if (title.contains("바보")) {
+            throw new InvalidRequest("title", "제목에 바보는 포함 될 수 없어요.");
+        }
     }
 
 }

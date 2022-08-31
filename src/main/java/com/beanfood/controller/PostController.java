@@ -1,6 +1,7 @@
 package com.beanfood.controller;
 
 import com.beanfood.request.PostCreate;
+import com.beanfood.request.PostEdit;
 import com.beanfood.request.PostSearch;
 import com.beanfood.response.PostResponse;
 import com.beanfood.service.PostService;
@@ -33,5 +34,14 @@ public class PostController {
         return postService.getList(postSearch);
     }
 
+    @PatchMapping("/posts/{postId}")
+    public void edit(@PathVariable Long postId, @RequestBody @Valid PostEdit postEdit) {
+        postService.edit(postId, postEdit);
+    }
+
+    @DeleteMapping("/posts/{postId}")
+    public void delete(@PathVariable Long postId) {
+        postService.delete(postId);
+    }
 
 }
