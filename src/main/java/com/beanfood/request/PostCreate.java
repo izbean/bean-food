@@ -1,5 +1,6 @@
 package com.beanfood.request;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -16,5 +17,18 @@ public class PostCreate {
 
     @NotBlank(message = "콘텐츠를 입력해주세요.")
     private String content;
+
+    @Builder
+    public PostCreate(String title, String content) {
+        this.title = title;
+        this.content = content;
+    }
+
+    public PostCreate changeTitle(String title) {
+        return PostCreate.builder()
+                .title(title)
+                .content(content)
+                .build();
+    }
 
 }
