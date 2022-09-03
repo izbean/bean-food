@@ -43,10 +43,10 @@ class PostServiceTest {
                 .build();
 
         // when
-        postService.write(postCreate);
+        Long id = postService.write(postCreate);
 
         // then
-        Post post = postRepository.findById(1L).get();
+        Post post = postRepository.findById(id).get();
 
         assertEquals(1L, postRepository.count());
         assertEquals("제목 입니다.", post.getTitle());

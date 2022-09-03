@@ -23,7 +23,7 @@ public class PostService {
 
     private final PostRepository postRepository;
 
-    public void write(PostCreate postCreate) {
+    public Long write(PostCreate postCreate) {
         postCreate.validate();
 
         Post post = Post.builder()
@@ -31,7 +31,7 @@ public class PostService {
                 .content(postCreate.getContent())
                 .build();
 
-        postRepository.save(post);
+        return postRepository.save(post).getId();
     }
 
     /**
